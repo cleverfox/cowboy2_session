@@ -69,19 +69,14 @@ touch(_Key) -> ok.
 
 %--- overload cowboy middleware callback
 %---
-execute(Req0, #{ handler_opts := Opts } = Env) ->
-	case cowboy_req:path(Req0) of
+execute(Req0, Env) ->
+  case cowboy_req:path(Req0) of
     <<"/public">> -> {ok, Req0, Env}; % skip session for static files
     <<"/public",_/binary>> -> {ok, Req0, Env}; % skip session for static files
     _ ->
       {SessId, Req1} = get_session(Req0),
-
-      % io:format("Env: ~p~n", [Env]),
-
-      Env2 = Env#{ handler_opts := [{esessionid, SessId} | Opts] },
-
-      {ok, Req1, Env2}
-
+      Req2 = Req1#{ esessionid => SessId },
+      {ok, Req2, Env}
   end.
 
 %--- private
